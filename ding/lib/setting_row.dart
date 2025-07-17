@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_theme.dart';
 
 class SettingRow extends StatelessWidget {
   final String label;
@@ -16,43 +17,66 @@ class SettingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 40, fontWeight: FontWeight.bold)),
-              Text(label, style: const TextStyle(fontSize: 18)),
-            ],
-          ),
-          Row(
-            children: [
-              _circleButton(Icons.remove, onMinus),
-              const SizedBox(width: 16),
-              _circleButton(Icons.add, onPlus),
-            ],
-          ),
-        ],
+    return Card(
+      elevation: AppTheme.cardElevation,
+      color: AppTheme.cardBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+      ),
+      child: Padding(
+        padding: AppTheme.cardPadding,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: AppTheme.settingValueFontSize,
+                    fontWeight: AppTheme.bold,
+                    color: AppTheme.settingValue,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: AppTheme.settingLabelFontSize,
+                    color: AppTheme.settingLabel,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                _circleButton(Icons.remove, onMinus),
+                const SizedBox(width: 12),
+                _circleButton(Icons.add, onPlus),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _circleButton(IconData icon, VoidCallback onPressed) {
     return Material(
-      color: const Color(0xFFF1F1F1),
+      color: AppTheme.circleButtonBg,
       shape: const CircleBorder(),
+      elevation: 2,
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: onPressed,
         child: SizedBox(
-          width: 60,
-          height: 60,
-          child: Icon(icon, size: 36),
+          width: 50,
+          height: 50,
+          child: Icon(
+            icon,
+            size: 28,
+            color: AppTheme.circleButtonIcon,
+          ),
         ),
       ),
     );

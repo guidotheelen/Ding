@@ -50,13 +50,6 @@ class _DingHomePageState extends State<DingHomePage> {
     });
   }
 
-  void _changeSwitch(int delta) {
-    setState(() {
-      switchDuringRound =
-          (switchDuringRound + delta).clamp(0, switchOptions.length - 1);
-    });
-  }
-
   String _formatDuration(Duration d) {
     final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final s = (d.inSeconds.remainder(60)).toString().padLeft(2, '0');
@@ -67,31 +60,35 @@ class _DingHomePageState extends State<DingHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
-        child: Container(
-          color: AppTheme.appBarBg,
-          child: SafeArea(
-            child: Padding(
-              padding: AppTheme.appBarPadding,
-              child: Text(
-                'DING! 🥊',
-                style: TextStyle(
-                  color: AppTheme.appBarText,
-                  fontWeight: AppTheme.bold,
-                  fontSize: AppTheme.appBarFontSize,
-                  letterSpacing: 1.5,
-                ),
+      appBar: AppBar(
+        backgroundColor: AppTheme.appBarBg,
+        elevation: 0,
+        toolbarHeight: 80,
+        title: Row(
+          children: [
+            Icon(
+              Icons.timer,
+              color: AppTheme.appBarText,
+              size: 32,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'DING!',
+              style: TextStyle(
+                color: AppTheme.appBarText,
+                fontWeight: AppTheme.bold,
+                fontSize: AppTheme.appBarFontSize,
+                letterSpacing: 1.5,
               ),
             ),
-          ),
+          ],
         ),
       ),
       body: Padding(
         padding: AppTheme.screenPadding,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 16),
             SettingRow(
               label: 'Round Length',
               value: _formatDuration(roundLength),
@@ -100,7 +97,9 @@ class _DingHomePageState extends State<DingHomePage> {
               onPlus: () => setState(() =>
                   _changeDuration(roundLength, 10, (d) => roundLength = d)),
             ),
-            Divider(color: AppTheme.divider),
+
+            const SizedBox(height: 12),
+
             SettingRow(
               label: 'Rest Time',
               value: _formatDuration(restTime),
@@ -109,55 +108,106 @@ class _DingHomePageState extends State<DingHomePage> {
               onPlus: () => setState(
                   () => _changeDuration(restTime, 10, (d) => restTime = d)),
             ),
-            Divider(color: AppTheme.divider),
+
+            const SizedBox(height: 12),
+
             SettingRow(
               label: 'Rounds',
               value: rounds.toString(),
               onMinus: () => _changeRounds(-1),
               onPlus: () => _changeRounds(1),
             ),
-            Divider(color: AppTheme.divider),
+
+            const SizedBox(height: 12),
+
             SettingRow(
-              label: 'Preparation time',
+              label: 'Preparation Time',
               value: _formatDuration(prepTime),
               onMinus: () => setState(
                   () => _changeDuration(prepTime, -5, (d) => prepTime = d)),
               onPlus: () => setState(
                   () => _changeDuration(prepTime, 5, (d) => prepTime = d)),
             ),
-            Divider(color: AppTheme.divider),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 70,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side:
-                      const BorderSide(color: AppTheme.buttonBorder, width: 2),
-                  shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppTheme.buttonRadius)),
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => TimerScreen(
-                        roundLength: roundLength,
-                        restTime: restTime,
-                        rounds: rounds,
-                        prepTime: prepTime,
+
+            const SizedBox(height: 12),
+
+            // Workout summary
+            Card(
+              elevation: AppTheme.cardElevation,
+              color: AppTheme.darkCardBg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Text(
+                      'TOTAL WORKOUT TIME',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: AppTheme.semiBold,
+                        fontSize: 14,
                       ),
                     ),
-                  );
-                },
-                child: Text('START',
-                    style: TextStyle(
-                        fontSize: AppTheme.startButtonFontSize,
-                        fontWeight: AppTheme.bold,
-                        color: AppTheme.buttonText)),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatDuration(prepTime +
+                          roundLength * rounds +
+                          restTime * (rounds - 1)),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 32,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
+
             const Spacer(),
+
+            // Start button
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.buttonBg,
+                foregroundColor: AppTheme.buttonText,
+                elevation: AppTheme.buttonElevation,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => TimerScreen(
+                      roundLength: roundLength,
+                      restTime: restTime,
+                      rounds: rounds,
+                      prepTime: prepTime,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.play_arrow, size: 28),
+                  const SizedBox(width: 8),
+                  Text(
+                    'DING!',
+                    style: TextStyle(
+                      fontSize: AppTheme.startButtonFontSize,
+                      fontWeight: AppTheme.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),

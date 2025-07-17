@@ -9,29 +9,32 @@ class AppTheme {
       );
 
   // Colors
-  static const Color primaryRed = Colors.red;
-  static const Color background = Colors.white;
-  static const Color appBarBg = Colors.black;
-  static const Color appBarText = Colors.red;
-  static const Color settingLabel = Colors.black;
-  static const Color settingValue = Colors.black;
-  static const Color divider = Colors.black12;
-  static const Color promoBg = Colors.black;
+  static const Color primaryRed = Color(0xFFE53935);
+  static const Color background = Color(0xFFF5F5F5);
+  static const Color appBarBg = Color(0xFF263238);
+  static const Color appBarText = Colors.white;
+  static const Color settingLabel = Color(0xFF757575);
+  static const Color settingValue = Color(0xFF263238);
+  static const Color divider = Color(0xFFEEEEEE);
+  static const Color promoBg = Color(0xFF263238);
   static const Color promoText = Colors.white;
-  static const Color promoRed = Colors.red;
-  static const Color switchHelp = Colors.black54;
-  static const Color buttonBorder = Colors.red;
-  static const Color buttonText = Colors.black;
-  static const Color circleButtonBg = Color(0xFFF1F1F1);
+  static const Color promoRed = Color(0xFFE53935);
+  static const Color switchHelp = Color(0xFF757575);
+  static const Color buttonBg = Color(0xFFE53935);
+  static const Color buttonBorder = Colors.transparent;
+  static const Color buttonText = Colors.white;
+  static const Color circleButtonBg = Color(0xFFECEFF1);
+  static const Color circleButtonIcon = Color(0xFF263238);
+  static const Color cardBg = Colors.white;
+  static const Color darkCardBg = Color(0xFF37474F);
 
   // Font sizes
-  static const double appBarFontSize = 32;
-  static const double settingValueFontSize = 40;
-  static const double settingLabelFontSize = 18;
-  static const double switchFontSize = 40;
-  static const double startButtonFontSize = 28;
-  static const double promoFontSize = 20;
-  static const double promoDownloadFontSize = 18;
+  static const double appBarFontSize = 28;
+  static const double settingValueFontSize = 32;
+  static const double settingLabelFontSize = 16;
+  static const double switchFontSize = 32;
+  static const double startButtonFontSize = 22;
+  static const double promoFontSize = 18;
 
   // Font weights
   static const FontWeight bold = FontWeight.bold;
@@ -39,13 +42,19 @@ class AppTheme {
 
   // Paddings
   static const EdgeInsets appBarPadding =
-      EdgeInsets.symmetric(horizontal: 16.0, vertical: 12);
+      EdgeInsets.symmetric(horizontal: 20.0, vertical: 12);
   static const EdgeInsets screenPadding =
-      EdgeInsets.symmetric(horizontal: 24.0);
+      EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0);
+  static const EdgeInsets cardPadding = EdgeInsets.all(20.0);
   static const EdgeInsets promoPadding =
-      EdgeInsets.symmetric(vertical: 24, horizontal: 20);
+      EdgeInsets.symmetric(vertical: 20, horizontal: 20);
 
   // Border radius
-  static const double promoRadius = 40;
-  static const double buttonRadius = 40;
+  static const double promoRadius = 16;
+  static const double buttonRadius = 12;
+  static const double cardRadius = 16;
+
+  // Elevations
+  static const double cardElevation = 2.0;
+  static const double buttonElevation = 3.0;
 }

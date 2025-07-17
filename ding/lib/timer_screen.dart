@@ -1,74 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-// import 'app_theme.dart';
+import 'segmented_progress_bar.dart';
+import 'done_screen.dart';
 
-// Helper class for a segment
-class _Segment {
-  final Duration duration;
-  final Color color;
-  _Segment({required this.duration, required this.color});
-}
-
-class _SegmentedProgressBar extends StatelessWidget {
-  final List<_Segment> segments;
-  final double elapsedSeconds;
-  final void Function(int segmentIndex)? onSegmentTap;
-  const _SegmentedProgressBar({
-    required this.segments,
-    required this.elapsedSeconds,
-    this.onSegmentTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    double acc = 0;
-    return SizedBox(
-      height: 16,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Row(
-          children: [
-            for (int i = 0; i < segments.length; i++)
-              Expanded(
-                flex: segments[i].duration.inMilliseconds,
-                child: GestureDetector(
-                  onTap: onSegmentTap != null ? () => onSegmentTap!(i) : null,
-                  behavior: HitTestBehavior.opaque,
-                  child: Stack(
-                    children: [
-                      Container(
-                        height: 16,
-                        color: segments[i].color.withOpacity(0.5),
-                      ),
-                      Builder(builder: (context) {
-                        double start = acc;
-                        acc += segments[i].duration.inMilliseconds;
-                        double fill = (elapsedSeconds * 1000 - start)
-                            .clamp(0, segments[i].duration.inMilliseconds)
-                            .toDouble();
-                        return FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: segments[i].duration.inMilliseconds == 0
-                              ? 0
-                              : fill / segments[i].duration.inMilliseconds,
-                          child: Container(
-                            height: 16,
-                            color: segments[i].color,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// End of _SegmentedProgressBar
+// ...existing code...
 
 class TimerScreen extends StatefulWidget {
   final Duration roundLength;
@@ -91,6 +26,50 @@ class TimerScreen extends StatefulWidget {
 enum TimerPhase { prep, round, rest, done }
 
 class _TimerScreenState extends State<TimerScreen> {
+  void _goToNextRound() {
+    setState(() {
+      if (phase == TimerPhase.prep) {
+        phase = TimerPhase.round;
+        currentRound = 1;
+        timeLeft = widget.roundLength;
+      } else if (phase == TimerPhase.round) {
+        if (currentRound < widget.rounds) {
+          phase = TimerPhase.rest;
+          timeLeft = widget.restTime;
+        } else {
+          phase = TimerPhase.done;
+          timeLeft = Duration.zero;
+        }
+      } else if (phase == TimerPhase.rest) {
+        currentRound++;
+        phase = TimerPhase.round;
+        timeLeft = widget.roundLength;
+      }
+    });
+  }
+
+  void _goToPreviousRound() {
+    setState(() {
+      if (phase == TimerPhase.round) {
+        if (currentRound == 1) {
+          phase = TimerPhase.prep;
+          timeLeft = widget.prepTime;
+        } else {
+          phase = TimerPhase.rest;
+          currentRound--;
+          timeLeft = widget.restTime;
+        }
+      } else if (phase == TimerPhase.rest) {
+        phase = TimerPhase.round;
+        timeLeft = widget.roundLength;
+      } else if (phase == TimerPhase.done) {
+        phase = TimerPhase.round;
+        currentRound = widget.rounds;
+        timeLeft = widget.roundLength;
+      }
+    });
+  }
+
   void _jumpToSegment(int segmentIndex) {
     final segments = _buildSegments();
     setState(() {
@@ -124,25 +103,26 @@ class _TimerScreenState extends State<TimerScreen> {
     });
   }
 
-  List<_Segment> _buildSegments() {
-    List<_Segment> segments = [];
+  List<Segment> _buildSegments() {
+    List<Segment> segments = [];
     // Preparation
-    segments.add(_Segment(duration: widget.prepTime, color: Colors.blueAccent));
+    segments.add(Segment(duration: widget.prepTime, color: Colors.blueAccent));
     for (int i = 0; i < widget.rounds; i++) {
       segments
-          .add(_Segment(duration: widget.roundLength, color: Colors.redAccent));
+          .add(Segment(duration: widget.roundLength, color: Colors.redAccent));
+      // Always add a rest after a round, except after the last round
       if (i < widget.rounds - 1) {
-        segments.add(_Segment(duration: widget.restTime, color: Colors.green));
+        segments.add(Segment(duration: widget.restTime, color: Colors.green));
       }
     }
     return segments;
   }
 
   double _elapsedSeconds() {
-    final totalMs = (widget.prepTime +
-            (widget.roundLength + widget.restTime) * widget.rounds -
-            widget.restTime)
-        .inMilliseconds;
+    // Calculate total duration by summing all segment durations
+    final segments = _buildSegments();
+    final totalMs =
+        segments.fold<int>(0, (sum, seg) => sum + seg.duration.inMilliseconds);
     return (totalMs - _remainingTotalMilliseconds()) / 1000.0;
   }
 
@@ -157,7 +137,7 @@ class _TimerScreenState extends State<TimerScreen> {
           widget.roundLength.inMilliseconds * (widget.rounds - currentRound);
     } else if (phase == TimerPhase.rest) {
       ms += widget.roundLength.inMilliseconds * (widget.rounds - currentRound) +
-          widget.restTime.inMilliseconds * (widget.rounds - currentRound + 1);
+          widget.restTime.inMilliseconds * (widget.rounds - currentRound - 1);
     }
     return ms;
   }
@@ -266,40 +246,13 @@ class _TimerScreenState extends State<TimerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _phaseColor(),
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Ding Timer', style: TextStyle(color: Colors.white)),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         color: _phaseColor(),
         child: Center(
           child: phase == TimerPhase.done
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 80,
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      'Workout Complete!',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Back'),
-                    ),
-                  ],
-                )
+              ? DoneScreen(onBack: () => Navigator.of(context).pop())
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -312,30 +265,21 @@ class _TimerScreenState extends State<TimerScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Segmented progress bar for all rounds
+                    // Simplified segmented progress bar
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 2, horizontal: 4),
-                        child: _SegmentedProgressBar(
-                          segments: _buildSegments(),
-                          elapsedSeconds: _elapsedSeconds(),
-                          onSegmentTap: (int segmentIndex) {
-                            _jumpToSegment(segmentIndex);
-                          },
-                        ),
+                      child: SegmentedProgressBar(
+                        segments: _buildSegments(),
+                        elapsedSeconds: _elapsedSeconds(),
+                        onSegmentTap: (int segmentIndex) {
+                          _jumpToSegment(segmentIndex);
+                        },
                       ),
                     ),
 
                     const SizedBox(height: 24),
-                    Container(
-                      alignment: Alignment.center,
-                      width: 420,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -355,7 +299,7 @@ class _TimerScreenState extends State<TimerScreen> {
                             child: Text(
                               '.${_format(timeLeft).substring(6, 8)}', // .ms
                               style: const TextStyle(
-                                fontSize: 40,
+                                fontSize: 30,
                                 fontWeight: FontWeight.bold,
                                 fontFamily: 'RobotoMono',
                                 letterSpacing: 2,
@@ -366,41 +310,84 @@ class _TimerScreenState extends State<TimerScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    if (phase == TimerPhase.round)
-                      Text(
-                        'Round $currentRound of ${widget.rounds}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      ),
                     const SizedBox(
                       height: 32,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        IconButton(
-                          icon: Icon(isRunning ? Icons.pause : Icons.play_arrow,
-                              size: 36),
-                          onPressed: () {
-                            setState(() {
-                              isRunning = !isRunning;
-                              if (isRunning)
-                                _startTicking();
-                              else
-                                _timer?.cancel();
-                            });
-                          },
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_left,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                            tooltip: 'Previous',
+                            onPressed: () {
+                              _goToPreviousRound();
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: Icon(
+                              isRunning ? Icons.pause : Icons.play_arrow,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isRunning = !isRunning;
+                                if (isRunning)
+                                  _startTicking();
+                                else
+                                  _timer?.cancel();
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.arrow_right,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                            tooltip: 'Next',
+                            onPressed: () {
+                              _goToNextRound();
+                            },
+                          ),
                         ),
                         const SizedBox(width: 24),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.stop,
-                            size: 36,
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
                           ),
-                          onPressed: () => Navigator.of(context).pop(),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.stop,
+                              size: 36,
+                              color: Colors.white,
+                            ),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
                         ),
                       ],
                     ),
