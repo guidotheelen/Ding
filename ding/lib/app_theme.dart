@@ -33,7 +33,7 @@ class AppTheme {
   static const double settingValueFontSize = 32;
   static const double settingLabelFontSize = 16;
   static const double switchFontSize = 32;
-  static const double startButtonFontSize = 22;
+  static const double startButtonFontSize = 40;
   static const double promoFontSize = 18;
 
   // Font weights

@@ -64,24 +64,14 @@ class _DingHomePageState extends State<DingHomePage> {
         backgroundColor: AppTheme.appBarBg,
         elevation: 0,
         toolbarHeight: 80,
-        title: Row(
-          children: [
-            Icon(
-              Icons.timer,
-              color: AppTheme.appBarText,
-              size: 32,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'DING!',
-              style: TextStyle(
-                color: AppTheme.appBarText,
-                fontWeight: AppTheme.bold,
-                fontSize: AppTheme.appBarFontSize,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ],
+        centerTitle: false,
+        title: Text(
+          'DING! 🥊',
+          style: TextStyle(
+            fontSize: 30,
+            fontWeight: AppTheme.bold,
+            color: Colors.white,
+          ),
         ),
       ),
       body: Padding(
@@ -129,7 +119,7 @@ class _DingHomePageState extends State<DingHomePage> {
                   () => _changeDuration(prepTime, 5, (d) => prepTime = d)),
             ),
 
-            const SizedBox(height: 12),
+            const Spacer(),
 
             // Workout summary
             Card(
@@ -166,7 +156,7 @@ class _DingHomePageState extends State<DingHomePage> {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 12),
 
             // Start button
             ElevatedButton(
@@ -191,19 +181,12 @@ class _DingHomePageState extends State<DingHomePage> {
                   ),
                 );
               },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.play_arrow, size: 28),
-                  const SizedBox(width: 8),
-                  Text(
-                    'DING!',
-                    style: TextStyle(
-                      fontSize: AppTheme.startButtonFontSize,
-                      fontWeight: AppTheme.bold,
-                    ),
-                  ),
-                ],
+              child: Text(
+                '💥🥊',
+                style: TextStyle(
+                  fontSize: AppTheme.startButtonFontSize,
+                  fontWeight: AppTheme.bold,
+                ),
               ),
             ),
 
