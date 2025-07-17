@@ -9,6 +9,7 @@ class TimerScreen extends StatefulWidget {
   final Duration restTime;
   final int rounds;
   final Duration prepTime;
+  final bool enableWhooshSound;
 
   const TimerScreen({
     super.key,
@@ -16,6 +17,7 @@ class TimerScreen extends StatefulWidget {
     required this.restTime,
     required this.rounds,
     required this.prepTime,
+    this.enableWhooshSound = true,
   });
 
   @override
@@ -33,6 +35,7 @@ class _TimerScreenState extends State<TimerScreen> {
       restTime: widget.restTime,
       rounds: widget.rounds,
       prepTime: widget.prepTime,
+      enableWhooshSound: widget.enableWhooshSound,
       stateUpdater: setState,
     );
     controller.startTicking();

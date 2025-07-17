@@ -33,7 +33,7 @@ class AppTheme {
   static const double settingValueFontSize = 32;
   static const double settingLabelFontSize = 16;
   static const double switchFontSize = 32;
-  static const double startButtonFontSize = 40;
+  static const double startButtonFontSize = 36;
   static const double promoFontSize = 18;
 
   // Font weights
@@ -45,7 +45,7 @@ class AppTheme {
       EdgeInsets.symmetric(horizontal: 20.0, vertical: 12);
   static const EdgeInsets screenPadding =
       EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0);
-  static const EdgeInsets cardPadding = EdgeInsets.all(20.0);
+  static const EdgeInsets cardPadding = EdgeInsets.all(16.0);
   static const EdgeInsets promoPadding =
       EdgeInsets.symmetric(vertical: 20, horizontal: 20);
 

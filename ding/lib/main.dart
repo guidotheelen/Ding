@@ -2,8 +2,15 @@ import 'package:flutter/material.dart';
 import 'setting_row.dart';
 import 'app_theme.dart';
 import 'timer_screen.dart';
+import 'sound_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize sound service
+  final soundService = SoundService();
+  await soundService.initialize();
+
   runApp(const DingApp());
 }
 
@@ -35,6 +42,7 @@ class _DingHomePageState extends State<DingHomePage> {
   Duration prepTime = const Duration(seconds: 15);
   int switchDuringRound = 0; // 0 = None
   final List<String> switchOptions = ['None', '1', '2', '3', '4'];
+  bool enableWhooshSound = true; // Switch for whoosh sound
 
   void _changeDuration(
       Duration current, int seconds, void Function(Duration) setter) {
@@ -75,7 +83,7 @@ class _DingHomePageState extends State<DingHomePage> {
         ),
       ),
       body: Padding(
-        padding: AppTheme.screenPadding,
+        padding: const EdgeInsets.fromLTRB(20.0, 12.0, 20.0, 8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -88,7 +96,7 @@ class _DingHomePageState extends State<DingHomePage> {
                   _changeDuration(roundLength, 10, (d) => roundLength = d)),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             SettingRow(
               label: 'Rest Time',
@@ -99,7 +107,7 @@ class _DingHomePageState extends State<DingHomePage> {
                   () => _changeDuration(restTime, 10, (d) => restTime = d)),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             SettingRow(
               label: 'Rounds',
@@ -108,7 +116,7 @@ class _DingHomePageState extends State<DingHomePage> {
               onPlus: () => _changeRounds(1),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             SettingRow(
               label: 'Preparation Time',
@@ -119,7 +127,55 @@ class _DingHomePageState extends State<DingHomePage> {
                   () => _changeDuration(prepTime, 5, (d) => prepTime = d)),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 8),
+
+            // Whoosh Sound Setting
+            Card(
+              elevation: AppTheme.cardElevation,
+              color: AppTheme.cardBg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+              ),
+              child: Padding(
+                padding: AppTheme.cardPadding,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          enableWhooshSound ? "ON" : "OFF",
+                          style: TextStyle(
+                            fontSize: AppTheme.settingValueFontSize,
+                            fontWeight: AppTheme.bold,
+                            color: AppTheme.settingValue,
+                          ),
+                        ),
+                        Text(
+                          "10 Second Whoosh",
+                          style: TextStyle(
+                            fontSize: AppTheme.settingLabelFontSize,
+                            color: AppTheme.settingLabel,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: enableWhooshSound,
+                      activeColor: AppTheme.buttonBg,
+                      onChanged: (value) {
+                        setState(() {
+                          enableWhooshSound = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
 
             // Workout summary
             Card(
@@ -129,8 +185,8 @@ class _DingHomePageState extends State<DingHomePage> {
                 borderRadius: BorderRadius.circular(AppTheme.cardRadius),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
                   children: [
                     Text(
                       'TOTAL WORKOUT TIME',
@@ -140,7 +196,7 @@ class _DingHomePageState extends State<DingHomePage> {
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const Spacer(),
                     Text(
                       _formatDuration((prepTime.inMilliseconds > 0
                               ? prepTime
@@ -160,7 +216,7 @@ class _DingHomePageState extends State<DingHomePage> {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             // Start button
             ElevatedButton(
@@ -171,7 +227,7 @@ class _DingHomePageState extends State<DingHomePage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.buttonRadius),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onPressed: () {
                 Navigator.of(context).push(
@@ -181,6 +237,7 @@ class _DingHomePageState extends State<DingHomePage> {
                       restTime: restTime,
                       rounds: rounds,
                       prepTime: prepTime,
+                      enableWhooshSound: enableWhooshSound,
                     ),
                   ),
                 );
@@ -194,7 +251,7 @@ class _DingHomePageState extends State<DingHomePage> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
           ],
         ),
       ),

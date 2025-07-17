@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'segmented_progress_bar.dart';
 import 'timer_model.dart';
+import 'sound_service.dart';
 
 class TimerController {
   // Model
@@ -13,12 +14,19 @@ class TimerController {
   // Timer for ticking
   Timer? _timer;
 
+  // Sound service
+  final SoundService _soundService = SoundService();
+
+  // Sound settings
+  final bool enableWhooshSound;
+
   TimerController({
     required Duration roundLength,
     required Duration restTime,
     required int rounds,
     required Duration prepTime,
     required this.stateUpdater,
+    this.enableWhooshSound = true,
   }) : model = TimerModel(
           roundLength: roundLength,
           restTime: restTime,
@@ -39,11 +47,50 @@ class TimerController {
     _timer = Timer.periodic(const Duration(milliseconds: 10), (_) => _onTick());
   }
 
+  // Track if we've played the warning sound for this round
+  bool _playedWarningSound = false;
+  static const int _warnBeforeEndSeconds = 10;
+
   // Timer tick handler
   void _onTick() {
     if (!model.isRunning) return;
+
+    // Store current phase before updating
+    final currentPhase = model.phase;
+    final Duration oldTimeLeft = model.timeLeft;
+
     stateUpdater(() {
       model.tick(const Duration(milliseconds: 10));
+
+      // Play sound if phase changed
+      if (currentPhase != model.phase) {
+        // Reset warning sound flag when phase changes
+        _playedWarningSound = false;
+
+        switch (model.phase) {
+          case TimerPhase.round:
+            _soundService.playDing(); // Play sound at start of round
+            break;
+          case TimerPhase.rest:
+            _soundService.playDing(); // Play sound at start of rest
+            break;
+          case TimerPhase.done:
+            _soundService.playDing(); // Play sound when workout is done
+            break;
+          default:
+            break;
+        }
+      }
+
+      // Play warning sound 10 seconds before end of round (if enabled)
+      if (enableWhooshSound &&
+          model.phase == TimerPhase.round &&
+          !_playedWarningSound &&
+          model.timeLeft.inSeconds <= _warnBeforeEndSeconds &&
+          oldTimeLeft.inSeconds > _warnBeforeEndSeconds) {
+        _soundService.playWhoosh();
+        _playedWarningSound = true;
+      }
     });
   }
 
@@ -96,5 +143,6 @@ class TimerController {
   // Cleanup
   void dispose() {
     _timer?.cancel();
+    // No need to dispose of the sound service since it's a singleton
   }
 }
