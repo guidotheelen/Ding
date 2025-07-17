@@ -39,7 +39,7 @@ class _DingHomePageState extends State<DingHomePage> {
   void _changeDuration(
       Duration current, int seconds, void Function(Duration) setter) {
     final newSeconds = current.inSeconds + seconds;
-    if (newSeconds > 0 && newSeconds <= 60 * 60) {
+    if (newSeconds >= 0 && newSeconds <= 60 * 60) {
       setter(Duration(seconds: newSeconds));
     }
   }
@@ -142,9 +142,13 @@ class _DingHomePageState extends State<DingHomePage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _formatDuration(prepTime +
+                      _formatDuration((prepTime.inMilliseconds > 0
+                              ? prepTime
+                              : Duration.zero) +
                           roundLength * rounds +
-                          restTime * (rounds - 1)),
+                          (restTime.inMilliseconds > 0
+                              ? restTime * (rounds - 1)
+                              : Duration.zero)),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

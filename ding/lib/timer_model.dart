@@ -22,11 +22,17 @@ class TimerModel {
     required this.restTime,
     required this.rounds,
     required this.prepTime,
-    this.phase = TimerPhase.prep,
+    TimerPhase? initialPhase,
     this.currentRound = 1,
     this.isRunning = true,
-  })  : timeLeft = prepTime,
-        totalTime = prepTime + (roundLength + restTime) * rounds - restTime;
+  })  : timeLeft = prepTime.inMilliseconds > 0 ? prepTime : roundLength,
+        totalTime = (prepTime.inMilliseconds > 0 ? prepTime : Duration.zero) +
+            roundLength * rounds +
+            (restTime.inMilliseconds > 0
+                ? restTime * (rounds - 1)
+                : Duration.zero),
+        phase =
+            prepTime.inMilliseconds > 0 ? TimerPhase.prep : TimerPhase.round;
 
   // Move to next phase
   void goToNextPhase() {
@@ -36,8 +42,14 @@ class TimerModel {
       timeLeft = roundLength;
     } else if (phase == TimerPhase.round) {
       if (currentRound < rounds) {
-        phase = TimerPhase.rest;
-        timeLeft = restTime;
+        // If rest time is zero, skip directly to the next round
+        if (restTime.inMilliseconds == 0) {
+          currentRound++;
+          timeLeft = roundLength;
+        } else {
+          phase = TimerPhase.rest;
+          timeLeft = restTime;
+        }
       } else {
         phase = TimerPhase.done;
         timeLeft = Duration.zero;
@@ -53,12 +65,22 @@ class TimerModel {
   void goToPreviousPhase() {
     if (phase == TimerPhase.round) {
       if (currentRound == 1) {
-        phase = TimerPhase.prep;
-        timeLeft = prepTime;
+        // Only go to prep phase if prep time is not zero
+        if (prepTime.inMilliseconds > 0) {
+          phase = TimerPhase.prep;
+          timeLeft = prepTime;
+        }
       } else {
-        phase = TimerPhase.rest;
-        currentRound--;
-        timeLeft = restTime;
+        // If rest time is zero, go to the previous round
+        if (restTime.inMilliseconds == 0) {
+          currentRound--;
+          phase = TimerPhase.round;
+          timeLeft = roundLength;
+        } else {
+          phase = TimerPhase.rest;
+          currentRound--;
+          timeLeft = restTime;
+        }
       }
     } else if (phase == TimerPhase.rest) {
       phase = TimerPhase.round;
@@ -83,12 +105,14 @@ class TimerModel {
   // Build segments for progress bar
   List<Segment> buildSegments() {
     List<Segment> segments = [];
-    // Preparation
-    segments.add(Segment(duration: prepTime, color: Colors.blueAccent));
+    // Only add preparation if the duration is greater than zero
+    if (prepTime.inMilliseconds > 0) {
+      segments.add(Segment(duration: prepTime, color: Colors.blueAccent));
+    }
     for (int i = 0; i < rounds; i++) {
       segments.add(Segment(duration: roundLength, color: Colors.redAccent));
-      // Always add a rest after a round, except after the last round
-      if (i < rounds - 1) {
+      // Only add rest after a round if the duration is greater than zero and it's not the last round
+      if (i < rounds - 1 && restTime.inMilliseconds > 0) {
         segments.add(Segment(duration: restTime, color: Colors.green));
       }
     }
@@ -127,14 +151,26 @@ class TimerModel {
   int getRemainingTotalMilliseconds() {
     int ms = timeLeft.inMilliseconds;
     if (phase == TimerPhase.prep) {
-      ms += ((roundLength + restTime) * rounds - restTime).inMilliseconds;
+      ms += ((roundLength +
+                      (restTime.inMilliseconds > 0
+                          ? restTime
+                          : Duration.zero)) *
+                  rounds -
+              (restTime.inMilliseconds > 0 ? restTime : Duration.zero))
+          .inMilliseconds;
     } else if (phase == TimerPhase.round) {
-      ms += restTime.inMilliseconds * (rounds - currentRound) +
-          roundLength.inMilliseconds * (rounds - currentRound);
+      if (restTime.inMilliseconds > 0) {
+        ms += restTime.inMilliseconds * (rounds - currentRound) +
+            roundLength.inMilliseconds * (rounds - currentRound);
+      } else {
+        ms += roundLength.inMilliseconds * (rounds - currentRound);
+      }
     } else if (phase == TimerPhase.rest) {
       // For rest phase, we need to account for remaining rounds correctly
-      ms += roundLength.inMilliseconds * (rounds - currentRound) +
-          restTime.inMilliseconds * (rounds - currentRound - 1);
+      if (restTime.inMilliseconds > 0) {
+        ms += roundLength.inMilliseconds * (rounds - currentRound) +
+            restTime.inMilliseconds * (rounds - currentRound - 1);
+      }
     }
     return ms;
   }
@@ -142,7 +178,12 @@ class TimerModel {
   // Jump to specific segment
   void jumpToSegment(int segmentIndex) {
     final segments = buildSegments();
-    if (segmentIndex == 0) {
+    if (segmentIndex >= segments.length) {
+      // Safety check if segmentIndex is out of bounds
+      return;
+    }
+
+    if (segmentIndex == 0 && prepTime.inMilliseconds > 0) {
       phase = TimerPhase.prep;
       currentRound = 1;
       timeLeft = prepTime;
@@ -151,7 +192,7 @@ class TimerModel {
 
       // Count how many round segments we've passed
       for (int i = 0; i <= segmentIndex; i++) {
-        if (segments[i].color == Colors.redAccent) {
+        if (i < segments.length && segments[i].color == Colors.redAccent) {
           round++;
         }
       }

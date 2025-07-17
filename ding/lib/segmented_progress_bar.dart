@@ -28,7 +28,7 @@ class SegmentedProgressBar extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border.all(
               color: Colors.white,
-              width: 3,
+              width: 2,
             ),
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -37,7 +37,9 @@ class SegmentedProgressBar extends StatelessWidget {
             children: [
               for (int i = 0; i < segments.length; i++)
                 Expanded(
-                  flex: segments[i].duration.inMilliseconds,
+                  flex: segments[i].duration.inMilliseconds > 0
+                      ? segments[i].duration.inMilliseconds
+                      : 1,
                   child: GestureDetector(
                     onTap: onSegmentTap != null ? () => onSegmentTap!(i) : null,
                     behavior: HitTestBehavior.opaque,
@@ -49,13 +51,13 @@ class SegmentedProgressBar extends StatelessWidget {
                             color: segments[i].color.withOpacity(0.5),
                             borderRadius: i == 0
                                 ? const BorderRadius.only(
-                                    topLeft: Radius.circular(8),
-                                    bottomLeft: Radius.circular(8),
+                                    topLeft: Radius.circular(6),
+                                    bottomLeft: Radius.circular(6),
                                   )
                                 : i == segments.length - 1
                                     ? const BorderRadius.only(
-                                        topRight: Radius.circular(8),
-                                        bottomRight: Radius.circular(8),
+                                        topRight: Radius.circular(6),
+                                        bottomRight: Radius.circular(6),
                                       )
                                     : BorderRadius.zero,
                           ),
@@ -63,28 +65,36 @@ class SegmentedProgressBar extends StatelessWidget {
                         Builder(builder: (context) {
                           double start = acc;
                           acc += segments[i].duration.inMilliseconds;
-                          double fill = (elapsedSeconds * 1000 - start)
-                              .clamp(0, segments[i].duration.inMilliseconds)
-                              .toDouble();
+                          double fill = segments[i].duration.inMilliseconds > 0
+                              ? (elapsedSeconds * 1000 - start)
+                                  .clamp(0, segments[i].duration.inMilliseconds)
+                                  .toDouble()
+                              : 0;
                           return FractionallySizedBox(
                             alignment: Alignment.centerLeft,
-                            widthFactor: segments[i].duration.inMilliseconds ==
-                                    0
-                                ? 0
-                                : fill / segments[i].duration.inMilliseconds,
+                            widthFactor: segments[i].duration.inMilliseconds > 0
+                                ? (fill / segments[i].duration.inMilliseconds)
+                                    .clamp(0.0, 1.0)
+                                : 0,
                             child: Container(
                               height: 16,
                               decoration: BoxDecoration(
                                 color: segments[i].color,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 0.5,
+                                  strokeAlign: BorderSide.strokeAlignInside,
+                                  style: BorderStyle.solid,
+                                ),
                                 borderRadius: i == 0
                                     ? const BorderRadius.only(
-                                        topLeft: Radius.circular(8),
-                                        bottomLeft: Radius.circular(8),
+                                        topLeft: Radius.circular(6),
+                                        bottomLeft: Radius.circular(6),
                                       )
                                     : i == segments.length - 1
                                         ? const BorderRadius.only(
-                                            topRight: Radius.circular(8),
-                                            bottomRight: Radius.circular(8),
+                                            topRight: Radius.circular(6),
+                                            bottomRight: Radius.circular(6),
                                           )
                                         : BorderRadius.zero,
                               ),
