@@ -175,7 +175,7 @@ class _DingHomePageState extends State<DingHomePage> {
               ),
             ),
 
-            const SizedBox(height: 10),
+            const Spacer(),
 
             // Workout summary
             Card(
