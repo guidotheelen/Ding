@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'segmented_progress_bar.dart';
+import 'sound_service.dart';
 
 enum TimerPhase { prep, round, rest, done }
 
@@ -34,61 +35,81 @@ class TimerModel {
         phase =
             prepTime.inMilliseconds > 0 ? TimerPhase.prep : TimerPhase.round;
 
+  // Add callback for phase changes and sound triggers
+  void Function(TimerPhase newPhase, SoundType? soundToPlay)? onPhaseChange;
+
   // Move to next phase
   void goToNextPhase() {
+    TimerPhase oldPhase = phase;
+    SoundType? soundToPlay;
     if (phase == TimerPhase.prep) {
       phase = TimerPhase.round;
       currentRound = 1;
       timeLeft = roundLength;
+      soundToPlay = SoundType.ding;
     } else if (phase == TimerPhase.round) {
       if (currentRound < rounds) {
-        // If rest time is zero, skip directly to the next round
         if (restTime.inMilliseconds == 0) {
           currentRound++;
           timeLeft = roundLength;
+          soundToPlay = SoundType.ding;
         } else {
           phase = TimerPhase.rest;
           timeLeft = restTime;
+          soundToPlay = SoundType.endbell;
         }
       } else {
         phase = TimerPhase.done;
         timeLeft = Duration.zero;
+        soundToPlay = SoundType.ding;
       }
     } else if (phase == TimerPhase.rest) {
       currentRound++;
       phase = TimerPhase.round;
       timeLeft = roundLength;
+      soundToPlay = SoundType.ding;
+    }
+    if (onPhaseChange != null && (oldPhase != phase || soundToPlay != null)) {
+      onPhaseChange!(phase, soundToPlay);
     }
   }
 
   // Move to previous phase
   void goToPreviousPhase() {
+    TimerPhase oldPhase = phase;
+    SoundType? soundToPlay;
     if (phase == TimerPhase.round) {
       if (currentRound == 1) {
-        // Only go to prep phase if prep time is not zero
         if (prepTime.inMilliseconds > 0) {
           phase = TimerPhase.prep;
           timeLeft = prepTime;
+          soundToPlay = SoundType.ding;
         }
       } else {
-        // If rest time is zero, go to the previous round
         if (restTime.inMilliseconds == 0) {
           currentRound--;
           phase = TimerPhase.round;
           timeLeft = roundLength;
+          soundToPlay = SoundType.ding;
         } else {
           phase = TimerPhase.rest;
           currentRound--;
           timeLeft = restTime;
+          soundToPlay = SoundType.endbell;
         }
       }
     } else if (phase == TimerPhase.rest) {
       phase = TimerPhase.round;
       timeLeft = roundLength;
+      soundToPlay = SoundType.ding;
     } else if (phase == TimerPhase.done) {
       phase = TimerPhase.round;
       currentRound = rounds;
       timeLeft = roundLength;
+      soundToPlay = SoundType.ding;
+    }
+    if (onPhaseChange != null && (oldPhase != phase || soundToPlay != null)) {
+      onPhaseChange!(phase, soundToPlay);
     }
   }
 
@@ -183,10 +204,13 @@ class TimerModel {
       return;
     }
 
+    TimerPhase oldPhase = phase;
+    SoundType? soundToPlay;
     if (segmentIndex == 0 && prepTime.inMilliseconds > 0) {
       phase = TimerPhase.prep;
       currentRound = 1;
       timeLeft = prepTime;
+      soundToPlay = SoundType.ding;
     } else {
       int round = 0;
 
@@ -202,16 +226,22 @@ class TimerModel {
         phase = TimerPhase.round;
         currentRound = round;
         timeLeft = roundLength;
+        soundToPlay = SoundType.ding;
       } else if (segments[segmentIndex].color == Colors.green) {
         phase = TimerPhase.rest;
         // For rest segments, the current round is the round we just completed
         currentRound = round;
         timeLeft = restTime;
+        soundToPlay = SoundType.endbell;
       } else if (segments[segmentIndex].color == Colors.blueAccent) {
         phase = TimerPhase.prep;
         currentRound = 1;
         timeLeft = prepTime;
+        soundToPlay = SoundType.ding;
       }
+    }
+    if (onPhaseChange != null && (oldPhase != phase || soundToPlay != null)) {
+      onPhaseChange!(phase, soundToPlay);
     }
   }
 }

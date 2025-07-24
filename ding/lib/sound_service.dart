@@ -1,5 +1,7 @@
 import 'package:audioplayers/audioplayers.dart';
 
+enum SoundType { ding, beep, endbell }
+
 class SoundService {
   static final SoundService _instance = SoundService._internal();
   final AudioPlayer _dingPlayer = AudioPlayer();
@@ -23,25 +25,25 @@ class SoundService {
     }
   }
 
-  Future<void> playDing() async {
+  Future<void> play(SoundType type) async {
     await initialize();
-    await _dingPlayer.stop();
-    await _dingPlayer.seek(Duration.zero);
-    await _dingPlayer.play(AssetSource('sounds/ding.mp3'));
-  }
-
-  Future<void> playBeep() async {
-    await initialize();
-    await _beepPlayer.stop();
-    await _beepPlayer.seek(Duration.zero);
-    await _beepPlayer.play(AssetSource('sounds/beep_beep.mp3'));
-  }
-
-  Future<void> playEndbell() async {
-    await initialize();
-    await _endbellPlayer.stop();
-    await _endbellPlayer.seek(Duration.zero);
-    await _endbellPlayer.play(AssetSource('sounds/end_bell.mp3'));
+    switch (type) {
+      case SoundType.ding:
+        await _dingPlayer.stop();
+        await _dingPlayer.seek(Duration.zero);
+        await _dingPlayer.play(AssetSource('sounds/ding.mp3'));
+        break;
+      case SoundType.beep:
+        await _beepPlayer.stop();
+        await _beepPlayer.seek(Duration.zero);
+        await _beepPlayer.play(AssetSource('sounds/beep_beep.mp3'));
+        break;
+      case SoundType.endbell:
+        await _endbellPlayer.stop();
+        await _endbellPlayer.seek(Duration.zero);
+        await _endbellPlayer.play(AssetSource('sounds/end_bell.mp3'));
+        break;
+    }
   }
 
   void dispose() {
