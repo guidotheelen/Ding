@@ -45,7 +45,7 @@ class TimerController {
   void startTicking() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 10), (_) => _onTick());
-    
+
     // Play the ding sound when the workout starts (if not in done phase)
     if (model.phase != TimerPhase.done) {
       _soundService.playDing();
@@ -86,7 +86,7 @@ class TimerController {
           !_playedWarningSound &&
           model.timeLeft.inSeconds <= _warnBeforeEndSeconds &&
           oldTimeLeft.inSeconds > _warnBeforeEndSeconds) {
-        _soundService.playWhoosh();
+        _soundService.playBeep();
         _playedWarningSound = true;
       }
     });
@@ -96,17 +96,17 @@ class TimerController {
   void goToNextRound() {
     final prevPhase = model.phase;
     stateUpdater(() => model.goToNextPhase());
-    
+
     // Play ding sound if we've entered a round phase
     if (prevPhase != model.phase && model.phase == TimerPhase.round) {
-      _soundService.playDing();
+      _soundService.playEndbell();
     }
   }
 
   void goToPreviousRound() {
     final prevPhase = model.phase;
     stateUpdater(() => model.goToPreviousPhase());
-    
+
     // Play ding sound if we've entered a round phase
     if (prevPhase != model.phase && model.phase == TimerPhase.round) {
       _soundService.playDing();
@@ -116,7 +116,7 @@ class TimerController {
   void jumpToSegment(int segmentIndex) {
     final prevPhase = model.phase;
     stateUpdater(() => model.jumpToSegment(segmentIndex));
-    
+
     // Play ding sound if we've entered a round phase
     if (prevPhase != model.phase && model.phase == TimerPhase.round) {
       _soundService.playDing();

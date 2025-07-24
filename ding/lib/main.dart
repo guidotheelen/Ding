@@ -153,7 +153,7 @@ class _DingHomePageState extends State<DingHomePage> {
                           ),
                         ),
                         Text(
-                          "10 Second Whoosh",
+                          "10 Second Beep",
                           style: TextStyle(
                             fontSize: AppTheme.settingLabelFontSize,
                             color: AppTheme.settingLabel,
