@@ -83,36 +83,29 @@ class _TimerScreenState extends State<TimerScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          controller
-                              .formatTime(controller.timeLeft)
-                              .substring(0, 5), // mm:ss
-                          style: const TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'RobotoMono',
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 60, // Fixed width for ms
-                          child: Text(
-                            '.${controller.formatTime(controller.timeLeft).substring(6, 8)}', // .ms
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'RobotoMono',
-                              letterSpacing: 2,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              controller
+                                  .formatTime(controller.timeLeft)
+                                  .substring(0, 5), // mm:ss
+                              style: const TextStyle(
+                                fontSize: 120,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'RobotoMono',
+                                letterSpacing: 2,
+                              ),
                             ),
-                            textAlign: TextAlign.left,
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                     const SizedBox(
                       height: 32,

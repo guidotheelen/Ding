@@ -32,13 +32,7 @@ class TimerController {
           restTime: restTime,
           rounds: rounds,
           prepTime: prepTime,
-        ) {
-    model.onPhaseChange = (TimerPhase newPhase, SoundType? soundToPlay) {
-      if (soundToPlay != null) {
-        _soundService.play(soundToPlay);
-      }
-    };
-  }
+        );
 
   // Getters to expose model properties
   TimerPhase get phase => model.phase;
@@ -51,6 +45,11 @@ class TimerController {
   void startTicking() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 10), (_) => _onTick());
+
+    // Play the ding sound only when starting a round (not during preparation)
+    if (model.phase == TimerPhase.round) {
+      _soundService.play(SoundType.ding);
+    }
   }
 
   // Track if we've played the warning sound for this round
@@ -60,9 +59,37 @@ class TimerController {
   // Timer tick handler
   void _onTick() {
     if (!model.isRunning) return;
+
+    // Store current phase before updating
+    final currentPhase = model.phase;
     final Duration oldTimeLeft = model.timeLeft;
+
     stateUpdater(() {
       model.tick(const Duration(milliseconds: 10));
+
+      // Play sound if phase changed
+      if (currentPhase != model.phase) {
+        // Reset warning sound flag when phase changes
+        _playedWarningSound = false;
+
+        // Play the ding sound specifically at the start of a round
+        if (model.phase == TimerPhase.round) {
+          _soundService.play(SoundType.ding); // Play sound at start of round
+        } else if (model.phase == TimerPhase.rest) {
+          _soundService
+              .play(SoundType.endbell); // Play endbell at start of rest
+        } else if (model.phase == TimerPhase.done) {
+          // Play endbell three times after the last round
+          Future(() async {
+            for (int i = 0; i < 3; i++) {
+              await _soundService.play(SoundType.endbell);
+              if (i < 2)
+                await Future.delayed(const Duration(milliseconds: 400));
+            }
+          });
+        }
+      }
+
       // Play warning sound 10 seconds before end of round (if enabled)
       if (enableWhooshSound &&
           model.phase == TimerPhase.round &&
@@ -72,24 +99,38 @@ class TimerController {
         _soundService.play(SoundType.beep);
         _playedWarningSound = true;
       }
-      // Reset warning sound flag when phase changes
-      if (model.phase != TimerPhase.round) {
-        _playedWarningSound = false;
-      }
     });
   }
 
   // Navigation methods
   void goToNextRound() {
+    final prevPhase = model.phase;
     stateUpdater(() => model.goToNextPhase());
+
+    // Play ding sound if we've entered a round phase
+    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+      _soundService.play(SoundType.ding);
+    }
   }
 
   void goToPreviousRound() {
+    final prevPhase = model.phase;
     stateUpdater(() => model.goToPreviousPhase());
+
+    // Play ding sound if we've entered a round phase
+    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+      _soundService.play(SoundType.ding);
+    }
   }
 
   void jumpToSegment(int segmentIndex) {
+    final prevPhase = model.phase;
     stateUpdater(() => model.jumpToSegment(segmentIndex));
+
+    // Play ding sound if we've entered a round phase
+    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+      _soundService.play(SoundType.ding);
+    }
   }
 
   // Utility methods
