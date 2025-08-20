@@ -62,6 +62,7 @@ class TimerController {
 
     // Store current phase before updating
     final currentPhase = model.phase;
+    final int oldRound = model.currentRound;
     final Duration oldTimeLeft = model.timeLeft;
 
     stateUpdater(() {
@@ -88,6 +89,12 @@ class TimerController {
             }
           });
         }
+      } else {
+        // Handle round-to-round transition when rest time is zero (phase stays 'round')
+        if (model.phase == TimerPhase.round && model.currentRound != oldRound) {
+          _playedWarningSound = false; // reset warning for new round
+          _soundService.play(SoundType.ding);
+        }
       }
 
       // Play warning sound 10 seconds before end of round (if enabled)
@@ -105,30 +112,36 @@ class TimerController {
   // Navigation methods
   void goToNextRound() {
     final prevPhase = model.phase;
+    final prevRound = model.currentRound;
     stateUpdater(() => model.goToNextPhase());
 
-    // Play ding sound if we've entered a round phase
-    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+    // Play ding sound if we've entered a round phase or advanced to the next round without a phase change
+    if (model.phase == TimerPhase.round &&
+        (prevPhase != model.phase || model.currentRound != prevRound)) {
       _soundService.play(SoundType.ding);
     }
   }
 
   void goToPreviousRound() {
     final prevPhase = model.phase;
+    final prevRound = model.currentRound;
     stateUpdater(() => model.goToPreviousPhase());
 
-    // Play ding sound if we've entered a round phase
-    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+    // Play ding sound if we've entered a round phase or changed rounds without a phase change
+    if (model.phase == TimerPhase.round &&
+        (prevPhase != model.phase || model.currentRound != prevRound)) {
       _soundService.play(SoundType.ding);
     }
   }
 
   void jumpToSegment(int segmentIndex) {
     final prevPhase = model.phase;
+    final prevRound = model.currentRound;
     stateUpdater(() => model.jumpToSegment(segmentIndex));
 
-    // Play ding sound if we've entered a round phase
-    if (prevPhase != model.phase && model.phase == TimerPhase.round) {
+    // Play ding sound if we've entered a round phase or changed rounds
+    if (model.phase == TimerPhase.round &&
+        (prevPhase != model.phase || model.currentRound != prevRound)) {
       _soundService.play(SoundType.ding);
     }
   }
