@@ -1,14 +1,14 @@
 // State
 let state = {
-    roundDuration: 180, // seconds
-    restDuration: 60,   // seconds
-    totalRounds: 12,
-    currentRound: 1,
-    timeLeft: 180,
-    phase: 'READY', // READY, ROUND, REST, DONE
-    isRunning: false,
-    soundEnabled: true,
-    focusMode: false
+  prepDuration: 10, // seconds
+  roundDuration: 180, // seconds
+  restDuration: 60, // seconds
+  totalRounds: 8,
+  currentRound: 1,
+  timeLeft: 180,
+  phase: "READY", // READY, PREP, ROUND, REST, DONE
+  isRunning: false,
+  soundEnabled: true,
 };
 
 let timerInterval = null;
@@ -16,249 +16,285 @@ let audioContext = null;
 
 // DOM Elements
 const els = {
-    minutes: document.getElementById('minutes-display'),
-    seconds: document.getElementById('seconds-display'),
-    currentRound: document.getElementById('current-round-display'),
-    status: document.getElementById('status-text'),
-    subStatus: document.getElementById('sub-status-text'),
-    progressBar: document.getElementById('progress-bar'),
-    progressText: document.getElementById('progress-text'),
-    playBtn: document.getElementById('play-btn'),
-    playIcon: document.getElementById('play-icon'),
-    resetBtn: document.getElementById('reset-btn'),
-    muteBtn: document.getElementById('mute-btn'),
-    muteIcon: document.getElementById('mute-icon'),
-    roundInput: document.getElementById('round-duration'),
-    restInput: document.getElementById('rest-duration'),
-    roundsInput: document.getElementById('total-rounds'),
-    soundToggle: document.getElementById('toggle'),
-    focusToggle: document.getElementById('focus'),
-    sidebar: document.querySelector('aside')
+  minutes: document.getElementById("minutes-display"),
+  seconds: document.getElementById("seconds-display"),
+  currentRound: document.getElementById("current-round-display"),
+  status: document.getElementById("status-text"),
+  subStatus: document.getElementById("sub-status-text"),
+  progressBar: document.getElementById("progress-bar"),
+  progressText: document.getElementById("progress-text"),
+  playBtn: document.getElementById("play-btn"),
+  playIcon: document.getElementById("play-icon"),
+  resetBtn: document.getElementById("reset-btn"),
+  muteBtn: document.getElementById("mute-btn"),
+  muteIcon: document.getElementById("mute-icon"),
+  prepInput: document.getElementById("prep-duration"),
+  roundInput: document.getElementById("round-duration"),
+  restInput: document.getElementById("rest-duration"),
+  roundsInput: document.getElementById("total-rounds"),
+  soundToggle: document.getElementById("toggle"),
 };
 
 // Sounds
 const sounds = {
-    ding: new Audio('sounds/ding.mp3'),
-    endBell: new Audio('sounds/end_bell.mp3'),
-    beep: new Audio('sounds/beep_beep.mp3')
+  ding: new Audio("sounds/ding.mp3"),
+  endBell: new Audio("sounds/end_bell.mp3"),
+  beep: new Audio("sounds/beep.mp3"),
 };
 
 // Initialize
 function init() {
-    updateDisplay();
-    
-    // Event Listeners
-    els.playBtn.addEventListener('click', toggleTimer);
-    els.resetBtn.addEventListener('click', resetTimer);
-    els.muteBtn.addEventListener('click', toggleSound);
-    els.soundToggle.addEventListener('change', (e) => {
-        state.soundEnabled = e.target.checked;
-        updateSoundIcon();
-    });
-    els.focusToggle.addEventListener('change', (e) => {
-        state.focusMode = e.target.checked;
-        if (state.focusMode) {
-            els.sidebar.classList.add('opacity-20', 'pointer-events-none');
-        } else {
-            els.sidebar.classList.remove('opacity-20', 'pointer-events-none');
-        }
-    });
-    
-    els.roundsInput.addEventListener('change', (e) => {
-        let val = parseInt(e.target.value);
-        if (val < 1) val = 1;
-        if (val > 50) val = 50;
-        state.totalRounds = val;
-        e.target.value = val;
-        if (state.phase === 'READY') updateDisplay();
-    });
+  updateDisplay();
+
+  // Event Listeners
+  els.playBtn.addEventListener("click", toggleTimer);
+  els.resetBtn.addEventListener("click", resetTimer);
+  els.muteBtn.addEventListener("click", toggleSound);
+  els.soundToggle.addEventListener("change", (e) => {
+    state.soundEnabled = e.target.checked;
+    updateSoundIcon();
+  });
+
+  els.roundsInput.addEventListener("change", (e) => {
+    let val = parseInt(e.target.value);
+    if (val < 1) val = 1;
+    if (val > 50) val = 50;
+    state.totalRounds = val;
+    e.target.value = val;
+    if (state.phase === "READY") updateDisplay();
+  });
 }
 
 // Timer Logic
 function toggleTimer() {
-    if (state.isRunning) {
-        pauseTimer();
-    } else {
-        startTimer();
-    }
+  if (state.isRunning) {
+    pauseTimer();
+  } else {
+    startTimer();
+  }
 }
 
 function startTimer() {
-    if (state.phase === 'DONE') resetTimer();
-    
-    state.isRunning = true;
-    els.playIcon.textContent = 'pause';
-    els.playBtn.classList.remove('bg-primary', 'hover:bg-[#ff3b44]');
-    els.playBtn.classList.add('bg-[#ee2b34]', 'hover:bg-[#d4252d]'); // Keep red but maybe darker? Or just keep same.
-    
-    // If starting from READY, play ding
-    if (state.phase === 'READY') {
-        state.phase = 'ROUND';
-        playSound('ding');
-    }
+  if (state.phase === "DONE") resetTimer();
 
-    timerInterval = setInterval(tick, 1000);
+  state.isRunning = true;
+  els.playIcon.textContent = "pause";
+  els.playBtn.classList.remove("bg-primary", "hover:bg-[#ff3b44]");
+  els.playBtn.classList.add("bg-[#ee2b34]", "hover:bg-[#d4252d]"); // Keep red but maybe darker? Or just keep same.
+
+  // If starting from READY, go to PREP
+  if (state.phase === "READY") {
+    if (state.prepDuration > 0) {
+      state.phase = "PREP";
+      state.timeLeft = state.prepDuration;
+    } else {
+      state.phase = "ROUND";
+      playSound("ding");
+    }
+  }
+
+  timerInterval = setInterval(tick, 1000);
 }
 
 function pauseTimer() {
-    state.isRunning = false;
-    els.playIcon.textContent = 'play_arrow';
-    clearInterval(timerInterval);
+  state.isRunning = false;
+  els.playIcon.textContent = "play_arrow";
+  clearInterval(timerInterval);
 }
 
 function resetTimer() {
-    pauseTimer();
-    state.phase = 'READY';
-    state.currentRound = 1;
-    state.timeLeft = state.roundDuration;
-    updateDisplay();
+  pauseTimer();
+  state.phase = "READY";
+  state.currentRound = 1;
+  state.timeLeft = state.roundDuration;
+  updateDisplay();
 }
 
 function tick() {
-    if (state.timeLeft > 0) {
-        state.timeLeft--;
-        
-        // Warning sound
-        if (state.timeLeft === 10 && state.phase === 'ROUND') {
-            playSound('beep');
-        }
-    } else {
-        // Phase transition
-        handlePhaseTransition();
-    }
-    updateDisplay();
+  state.timeLeft--;
+
+  // Warning sounds - beep every second from 10 down to 1
+  if (state.timeLeft <= 10 && state.timeLeft > 0 && state.phase === "ROUND") {
+    playSound("beep");
+  }
+  // Prep warning (3, 2, 1)
+  if (state.phase === "PREP" && state.timeLeft <= 3 && state.timeLeft > 0) {
+    playSound("beep");
+  }
+
+  updateDisplay();
+
+  // Phase transition after displaying 00:00
+  if (state.timeLeft <= 0) {
+    handlePhaseTransition();
+  }
 }
 
 function handlePhaseTransition() {
-    if (state.phase === 'ROUND') {
-        if (state.currentRound < state.totalRounds) {
-            state.phase = 'REST';
-            state.timeLeft = state.restDuration;
-            playSound('endBell');
-        } else {
-            state.phase = 'DONE';
-            state.timeLeft = 0;
-            playSound('endBell');
-            pauseTimer();
-            // Play end bell 3 times like in Flutter app
-            setTimeout(() => playSound('endBell'), 400);
-            setTimeout(() => playSound('endBell'), 800);
-        }
-    } else if (state.phase === 'REST') {
-        state.phase = 'ROUND';
+  if (state.phase === "PREP") {
+    state.phase = "ROUND";
+    state.timeLeft = state.roundDuration;
+    playSound("ding");
+  } else if (state.phase === "ROUND") {
+    if (state.currentRound < state.totalRounds) {
+      if (state.restDuration > 0) {
+        state.phase = "REST";
+        state.timeLeft = state.restDuration;
+        playSound("endBell");
+      } else {
+        state.phase = "ROUND";
         state.currentRound++;
         state.timeLeft = state.roundDuration;
-        playSound('ding');
+        playSound("ding");
+      }
+    } else {
+      state.phase = "DONE";
+      state.timeLeft = 0;
+      playSound("endBell");
+      pauseTimer();
+      // Play end bell 3 times like in Flutter app
+      setTimeout(() => playSound("endBell"), 400);
+      setTimeout(() => playSound("endBell"), 800);
     }
+  } else if (state.phase === "REST") {
+    state.phase = "ROUND";
+    state.currentRound++;
+    state.timeLeft = state.roundDuration;
+    playSound("ding");
+  }
 }
 
 // Display Logic
 function updateDisplay() {
-    // Time
-    const mins = Math.floor(state.timeLeft / 60);
-    const secs = state.timeLeft % 60;
-    els.minutes.textContent = mins.toString().padStart(2, '0');
-    els.seconds.textContent = secs.toString().padStart(2, '0');
-    
-    // Round
-    els.currentRound.innerHTML = `ROUND ${state.currentRound} <span class="text-[#543b3c]">/ ${state.totalRounds}</span>`;
-    
-    // Status & Progress
-    let totalDuration = state.phase === 'REST' ? state.restDuration : state.roundDuration;
-    let progress = 0;
-    
-    if (state.phase === 'READY') {
-        els.status.textContent = 'Ready';
-        els.subStatus.textContent = 'Press Play to Start';
-        progress = 0;
-        els.progressBar.classList.remove('bg-green-500', 'bg-primary');
-        els.progressBar.classList.add('bg-primary');
-    } else if (state.phase === 'ROUND') {
-        els.status.textContent = 'Training'; // Or "Fight!"
-        els.subStatus.textContent = `Next: Rest (${formatDuration(state.restDuration)})`;
-        progress = ((totalDuration - state.timeLeft) / totalDuration) * 100;
-        els.progressBar.classList.remove('bg-green-500');
-        els.progressBar.classList.add('bg-primary');
-    } else if (state.phase === 'REST') {
-        els.status.textContent = 'Rest';
-        els.subStatus.textContent = `Next: Round ${state.currentRound + 1}`;
-        progress = ((totalDuration - state.timeLeft) / totalDuration) * 100;
-        els.progressBar.classList.remove('bg-primary');
-        els.progressBar.classList.add('bg-green-500'); // Green for rest? Or keep red? Flutter app uses segmented progress bar.
-        // Let's stick to primary color for now or maybe yellow/green for rest.
-        // The HTML provided has primary color hardcoded in class. I'll stick to primary.
-        els.progressBar.classList.add('bg-primary'); 
-    } else if (state.phase === 'DONE') {
-        els.status.textContent = 'Finished';
-        els.subStatus.textContent = 'Great Workout!';
-        progress = 100;
-    }
-    
-    els.progressBar.style.width = `${progress}%`;
-    els.progressText.textContent = `${Math.round(progress)}%`;
+  // Time
+  const mins = Math.floor(state.timeLeft / 60);
+  const secs = state.timeLeft % 60;
+  els.minutes.textContent = mins.toString().padStart(2, "0");
+  els.seconds.textContent = secs.toString().padStart(2, "0");
+
+  // Round
+  els.currentRound.innerHTML = `ROUND ${state.currentRound} <span class="text-[#543b3c]">/ ${state.totalRounds}</span>`;
+
+  // Status & Progress
+  let totalDuration = state.roundDuration;
+  if (state.phase === "REST") totalDuration = state.restDuration;
+  if (state.phase === "PREP") totalDuration = state.prepDuration;
+
+  let progress = 0;
+
+  // Reset classes
+  els.progressBar.classList.remove("bg-green-500", "bg-primary", "bg-blue-500");
+
+  if (state.phase === "READY") {
+    els.status.textContent = "Ready";
+    els.subStatus.textContent = "Press Play to Start";
+    progress = 0;
+    els.progressBar.classList.add("bg-primary");
+  } else if (state.phase === "PREP") {
+    els.status.textContent = "Get Ready";
+    els.subStatus.textContent = "Next: Round 1";
+    progress = ((totalDuration - state.timeLeft) / totalDuration) * 100;
+    els.progressBar.classList.add("bg-blue-500");
+  } else if (state.phase === "ROUND") {
+    els.status.textContent = "Training"; // Or "Fight!"
+    els.subStatus.textContent = `Next: Rest (${formatDuration(
+      state.restDuration
+    )})`;
+    progress = ((totalDuration - state.timeLeft) / totalDuration) * 100;
+    els.progressBar.classList.add("bg-primary");
+  } else if (state.phase === "REST") {
+    els.status.textContent = "Rest";
+    els.subStatus.textContent = `Next: Round ${state.currentRound + 1}`;
+    progress = ((totalDuration - state.timeLeft) / totalDuration) * 100;
+    els.progressBar.classList.add("bg-green-500");
+  } else if (state.phase === "DONE") {
+    els.status.textContent = "Finished";
+    els.subStatus.textContent = "Great Workout!";
+    progress = 100;
+    els.progressBar.classList.add("bg-primary");
+  }
+
+  els.progressBar.style.width = `${progress}%`;
+  els.progressText.textContent = `${Math.round(progress)}%`;
 }
 
 function formatDuration(secs) {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 // Settings Logic
-window.adjustTime = function(id, amount) {
-    if (state.isRunning) return;
-    
-    if (id === 'round-duration') {
-        state.roundDuration += amount;
-        if (state.roundDuration < 10) state.roundDuration = 10;
-        if (state.roundDuration > 600) state.roundDuration = 600;
-        els.roundInput.value = formatDuration(state.roundDuration);
-        if (state.phase === 'READY' || state.phase === 'ROUND') {
-            state.timeLeft = state.roundDuration;
-            updateDisplay();
-        }
-    } else if (id === 'rest-duration') {
-        state.restDuration += amount;
-        if (state.restDuration < 0) state.restDuration = 0;
-        if (state.restDuration > 300) state.restDuration = 300;
-        els.restInput.value = formatDuration(state.restDuration);
+window.adjustTime = function (id, amount) {
+  if (state.isRunning) return;
+
+  if (id === "prep-duration") {
+    state.prepDuration += amount;
+    if (state.prepDuration < 0) state.prepDuration = 0;
+    if (state.prepDuration > 60) state.prepDuration = 60;
+    els.prepInput.value = formatDuration(state.prepDuration);
+  } else if (id === "round-duration") {
+    state.roundDuration += amount;
+    if (state.roundDuration < 10) state.roundDuration = 10;
+    if (state.roundDuration > 600) state.roundDuration = 600;
+    els.roundInput.value = formatDuration(state.roundDuration);
+    if (state.phase === "READY" || state.phase === "ROUND") {
+      state.timeLeft = state.roundDuration;
+      updateDisplay();
     }
+  } else if (id === "rest-duration") {
+    state.restDuration += amount;
+    if (state.restDuration < 0) state.restDuration = 0;
+    if (state.restDuration > 300) state.restDuration = 300;
+    els.restInput.value = formatDuration(state.restDuration);
+  }
 };
 
-window.adjustRounds = function(amount) {
-    if (state.isRunning) return;
-    
-    state.totalRounds += amount;
-    if (state.totalRounds < 1) state.totalRounds = 1;
-    if (state.totalRounds > 50) state.totalRounds = 50;
-    els.roundsInput.value = state.totalRounds;
+window.adjustRounds = function (amount) {
+  if (state.isRunning) return;
+
+  state.totalRounds += amount;
+  if (state.totalRounds < 1) state.totalRounds = 1;
+  if (state.totalRounds > 50) state.totalRounds = 50;
+  els.roundsInput.value = state.totalRounds;
+  updateDisplay();
+};
+
+window.setRoundDuration = function (seconds) {
+  if (state.isRunning) return;
+
+  state.roundDuration = seconds;
+  els.roundInput.value = formatDuration(state.roundDuration);
+  if (state.phase === "READY" || state.phase === "ROUND") {
+    state.timeLeft = state.roundDuration;
     updateDisplay();
+  }
 };
 
 function toggleSound() {
-    state.soundEnabled = !state.soundEnabled;
-    els.soundToggle.checked = state.soundEnabled;
-    updateSoundIcon();
+  state.soundEnabled = !state.soundEnabled;
+  els.soundToggle.checked = state.soundEnabled;
+  updateSoundIcon();
 }
 
 function updateSoundIcon() {
-    if (state.soundEnabled) {
-        els.muteIcon.textContent = 'volume_up';
-        els.muteBtn.classList.remove('opacity-50');
-    } else {
-        els.muteIcon.textContent = 'volume_off';
-        els.muteBtn.classList.add('opacity-50');
-    }
+  if (state.soundEnabled) {
+    els.muteIcon.textContent = "volume_up";
+    els.muteBtn.classList.remove("opacity-50");
+  } else {
+    els.muteIcon.textContent = "volume_off";
+    els.muteBtn.classList.add("opacity-50");
+  }
 }
 
 function playSound(name) {
-    if (!state.soundEnabled) return;
-    
-    const sound = sounds[name];
-    if (sound) {
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log('Audio play failed:', e));
-    }
+  if (!state.soundEnabled) return;
+
+  const sound = sounds[name];
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch((e) => console.log("Audio play failed:", e));
+  }
 }
 
 // Start
