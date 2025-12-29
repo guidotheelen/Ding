@@ -314,9 +314,19 @@ function toggleSound() {
 
 function toggleMobileMenu() {
   if (els.sidebar && els.menuBackdrop) {
-    els.sidebar.classList.toggle("hidden");
-    els.sidebar.classList.toggle("flex");
-    els.menuBackdrop.classList.toggle("hidden");
+    const isOpen = !els.sidebar.classList.contains("-translate-x-full");
+    
+    if (isOpen) {
+      // Close menu
+      els.sidebar.classList.add("-translate-x-full");
+      els.menuBackdrop.classList.add("opacity-0");
+      els.menuBackdrop.classList.add("pointer-events-none");
+    } else {
+      // Open menu
+      els.sidebar.classList.remove("-translate-x-full");
+      els.menuBackdrop.classList.remove("opacity-0");
+      els.menuBackdrop.classList.remove("pointer-events-none");
+    }
   }
 }
 
