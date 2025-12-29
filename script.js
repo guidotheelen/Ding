@@ -33,6 +33,9 @@ const els = {
   restInput: document.getElementById("rest-duration"),
   roundsInput: document.getElementById("total-rounds"),
   soundToggle: document.getElementById("toggle"),
+  mobileMenuBtn: document.getElementById("mobile-menu-btn"),
+  sidebar: document.getElementById("settings-sidebar"),
+  menuBackdrop: document.getElementById("menu-backdrop"),
 };
 
 // Sounds
@@ -60,6 +63,10 @@ function init() {
     state.soundEnabled = e.target.checked;
     updateSoundIcon();
   });
+
+  if (els.mobileMenuBtn) {
+    els.mobileMenuBtn.addEventListener("click", toggleMobileMenu);
+  }
 
   els.roundsInput.addEventListener("change", (e) => {
     if (state.isRunning) {
@@ -303,6 +310,14 @@ function toggleSound() {
   state.soundEnabled = !state.soundEnabled;
   els.soundToggle.checked = state.soundEnabled;
   updateSoundIcon();
+}
+
+function toggleMobileMenu() {
+  if (els.sidebar && els.menuBackdrop) {
+    els.sidebar.classList.toggle("hidden");
+    els.sidebar.classList.toggle("flex");
+    els.menuBackdrop.classList.toggle("hidden");
+  }
 }
 
 function updateSoundIcon() {
