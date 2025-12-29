@@ -44,6 +44,12 @@ const sounds = {
 
 // Initialize
 function init() {
+  // Sync input values with state
+  els.roundsInput.value = state.totalRounds;
+  els.prepInput.value = formatDuration(state.prepDuration);
+  els.roundInput.value = formatDuration(state.roundDuration);
+  els.restInput.value = formatDuration(state.restDuration);
+
   updateDisplay();
 
   // Event Listeners
@@ -56,8 +62,12 @@ function init() {
   });
 
   els.roundsInput.addEventListener("change", (e) => {
+    if (state.isRunning) {
+      e.target.value = state.totalRounds;
+      return;
+    }
     let val = Number.parseInt(e.target.value);
-    if (val < 1) val = 1;
+    if (Number.isNaN(val) || val < 1) val = 1;
     if (val > 50) val = 50;
     state.totalRounds = val;
     e.target.value = val;
