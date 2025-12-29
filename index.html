@@ -82,6 +82,10 @@
                             <button class="text-[#b99d9e] hover:text-white" onclick="adjustTime('prep-duration', -5)"><span class="material-symbols-outlined text-sm">expand_more</span></button>
                         </div>
                     </div>
+                    <div class="flex gap-2">
+                        <button onclick="setPrepDuration(0)" class="flex-1 px-3 py-2 bg-[#2d1b1c] hover:bg-[#392829] border border-[#392829] hover:border-primary/50 rounded-lg text-xs font-medium text-[#b99d9e] hover:text-white transition-all">No Prep</button>
+                        <button onclick="setPrepDuration(10)" class="flex-1 px-3 py-2 bg-[#2d1b1c] hover:bg-[#392829] border border-[#392829] hover:border-primary/50 rounded-lg text-xs font-medium text-[#b99d9e] hover:text-white transition-all">10 sec</button>
+                    </div>
                 </div>
                 <div class="space-y-2">
                     <label for="round-duration" class="text-sm font-medium text-[#e5e5e5]">Round Duration</label>

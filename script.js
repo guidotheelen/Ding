@@ -299,6 +299,17 @@ globalThis.setRoundDuration = function (seconds) {
   }
 };
 
+globalThis.setPrepDuration = function (seconds) {
+  if (state.isRunning) return;
+
+  state.prepDuration = seconds;
+  els.prepInput.value = formatDuration(state.prepDuration);
+  if (state.phase === "PREP") {
+    state.timeLeft = state.prepDuration;
+    updateDisplay();
+  }
+};
+
 globalThis.setRestDuration = function (seconds) {
   if (state.isRunning) return;
 
