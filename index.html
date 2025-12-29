@@ -15,28 +15,34 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#ee2b34",
+                        "primary": {
+                            DEFAULT: "#ee2b34",
+                            light: "#ff3b44",
+                            dark: "#d4252d",
+                        },
                         "background-light": "#f8f6f6",
                         "background-dark": "#221011",
                         "surface-dark": "#2d1b1c", 
                         "surface-input": "#392829",
+                        "toggle": {
+                            bg: "rgba(0, 0, 0, 0.4)",
+                            "checked-bg": "rgba(238, 43, 52, 0.3)",
+                            thumb: "#ffffff",
+                            "checked-thumb": "#ee2b34",
+                        },
                     },
                     fontFamily: {
                         "display": ["Lexend", "sans-serif"]
                     },
                     borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    boxShadow: {
+                        "toggle": "0 0 10px rgba(238, 43, 52, 0.6)",
+                    },
                 },
             },
         }
     </script>
     <style>
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #ee2b34;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #ee2b34;
-        }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
