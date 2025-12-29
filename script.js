@@ -56,7 +56,7 @@ function init() {
   });
 
   els.roundsInput.addEventListener("change", (e) => {
-    let val = parseInt(e.target.value);
+    let val = Number.parseInt(e.target.value);
     if (val < 1) val = 1;
     if (val > 50) val = 50;
     state.totalRounds = val;
@@ -188,7 +188,6 @@ function updateDisplay() {
   if (state.phase === "READY") {
     els.status.textContent = "Ready";
     els.subStatus.textContent = "Press Play to Start";
-    progress = 0;
     els.progressBar.classList.add("bg-primary");
   } else if (state.phase === "PREP") {
     els.status.textContent = "Get Ready";
@@ -225,32 +224,44 @@ function formatDuration(secs) {
 }
 
 // Settings Logic
-window.adjustTime = function (id, amount) {
+function adjustPrepDuration(amount) {
+  state.prepDuration += amount;
+  if (state.prepDuration < 0) state.prepDuration = 0;
+  if (state.prepDuration > 60) state.prepDuration = 60;
+  els.prepInput.value = formatDuration(state.prepDuration);
+}
+
+function adjustRoundDuration(amount) {
+  state.roundDuration += amount;
+  if (state.roundDuration < 10) state.roundDuration = 10;
+  if (state.roundDuration > 600) state.roundDuration = 600;
+  els.roundInput.value = formatDuration(state.roundDuration);
+  if (state.phase === "READY" || state.phase === "ROUND") {
+    state.timeLeft = state.roundDuration;
+    updateDisplay();
+  }
+}
+
+function adjustRestDuration(amount) {
+  state.restDuration += amount;
+  if (state.restDuration < 0) state.restDuration = 0;
+  if (state.restDuration > 300) state.restDuration = 300;
+  els.restInput.value = formatDuration(state.restDuration);
+}
+
+globalThis.adjustTime = function (id, amount) {
   if (state.isRunning) return;
 
   if (id === "prep-duration") {
-    state.prepDuration += amount;
-    if (state.prepDuration < 0) state.prepDuration = 0;
-    if (state.prepDuration > 60) state.prepDuration = 60;
-    els.prepInput.value = formatDuration(state.prepDuration);
+    adjustPrepDuration(amount);
   } else if (id === "round-duration") {
-    state.roundDuration += amount;
-    if (state.roundDuration < 10) state.roundDuration = 10;
-    if (state.roundDuration > 600) state.roundDuration = 600;
-    els.roundInput.value = formatDuration(state.roundDuration);
-    if (state.phase === "READY" || state.phase === "ROUND") {
-      state.timeLeft = state.roundDuration;
-      updateDisplay();
-    }
+    adjustRoundDuration(amount);
   } else if (id === "rest-duration") {
-    state.restDuration += amount;
-    if (state.restDuration < 0) state.restDuration = 0;
-    if (state.restDuration > 300) state.restDuration = 300;
-    els.restInput.value = formatDuration(state.restDuration);
+    adjustRestDuration(amount);
   }
 };
 
-window.adjustRounds = function (amount) {
+globalThis.adjustRounds = function (amount) {
   if (state.isRunning) return;
 
   state.totalRounds += amount;
@@ -260,7 +271,7 @@ window.adjustRounds = function (amount) {
   updateDisplay();
 };
 
-window.setRoundDuration = function (seconds) {
+globalThis.setRoundDuration = function (seconds) {
   if (state.isRunning) return;
 
   state.roundDuration = seconds;
