@@ -292,6 +292,13 @@ globalThis.setRoundDuration = function (seconds) {
   }
 };
 
+globalThis.setRestDuration = function (seconds) {
+  if (state.isRunning) return;
+
+  state.restDuration = seconds;
+  els.restInput.value = formatDuration(state.restDuration);
+};
+
 function toggleSound() {
   state.soundEnabled = !state.soundEnabled;
   els.soundToggle.checked = state.soundEnabled;

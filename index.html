@@ -98,6 +98,10 @@
                             <button class="text-[#b99d9e] hover:text-white" onclick="adjustTime('rest-duration', -10)"><span class="material-symbols-outlined text-sm">expand_more</span></button>
                         </div>
                     </div>
+                    <div class="flex gap-2">
+                        <button onclick="setRestDuration(0)" class="flex-1 px-3 py-2 bg-[#2d1b1c] hover:bg-[#392829] border border-[#392829] hover:border-primary/50 rounded-lg text-xs font-medium text-[#b99d9e] hover:text-white transition-all">No Rest</button>
+                        <button onclick="setRestDuration(60)" class="flex-1 px-3 py-2 bg-[#2d1b1c] hover:bg-[#392829] border border-[#392829] hover:border-primary/50 rounded-lg text-xs font-medium text-[#b99d9e] hover:text-white transition-all">1 min</button>
+                    </div>
                 </div>
                 <div class="space-y-2">
                     <label for="total-rounds" class="text-sm font-medium text-[#e5e5e5]">Total Rounds</label>
