@@ -115,15 +115,16 @@
             </div>
             <div class="space-y-5">
                 <h3 class="text-xs uppercase tracking-wider text-[#b99d9e] font-bold">Preferences</h3>
-                <div class="flex items-center justify-between p-3 bg-[#392829] rounded-lg">
+                <div class="flex items-center justify-between p-3 bg-[#392829] rounded-lg hover:bg-[#4a3536] transition-all border border-transparent hover:border-primary/30">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined text-[#b99d9e]">notifications_active</span>
-                        <span class="font-medium text-sm text-white">Sound Effects</span>
+                        <label for="toggle" class="font-medium text-sm text-white cursor-pointer">Sound Effects</label>
                     </div>
-                    <div class="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
-                        <input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 border-[#392829] appearance-none cursor-pointer checked:border-primary transition-all duration-300" id="toggle" name="toggle" type="checkbox"/>
-                        <div class="toggle-label block overflow-hidden h-5 rounded-full bg-black/40 cursor-pointer"></div>
-                    </div>
+                    <label for="toggle" class="relative inline-block w-12 h-6 cursor-pointer">
+                        <input checked="" class="toggle-checkbox peer sr-only" id="toggle" name="toggle" type="checkbox"/>
+                        <div class="absolute inset-0 bg-black/40 rounded-full transition-all duration-300 peer-checked:bg-primary/30"></div>
+                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-lg transition-all duration-300 peer-checked:translate-x-6 peer-checked:bg-primary peer-checked:shadow-[0_0_10px_rgba(238,43,52,0.6)]"></div>
+                    </label>
                 </div>
             </div>
         </div>
