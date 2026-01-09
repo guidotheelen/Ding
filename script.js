@@ -242,8 +242,8 @@ function updateDisplay() {
   els.progressBar.style.width = `${progress}%`;
   els.progressText.textContent = `${Math.round(progress)}%`;
   if (els.totalTime) {
-    els.totalTime.textContent = `Total: ${formatTotalDuration(
-      getTotalWorkoutSeconds()
+    els.totalTime.textContent = `Remaining: ${formatTotalDuration(
+      getRemainingWorkoutSeconds()
     )}`;
   }
 }
@@ -275,6 +275,49 @@ function getTotalWorkoutSeconds() {
     rounds * state.roundDuration +
     restSegments * state.restDuration
   );
+}
+
+function getRemainingWorkoutSeconds() {
+  const rounds = Math.max(state.totalRounds, 1);
+  const restSegments = Math.max(rounds - 1, 0);
+
+  if (state.phase === "DONE") return 0;
+
+  if (state.phase === "READY") {
+    const prep = Math.max(state.prepDuration, 0);
+    return (
+      prep + rounds * state.roundDuration + restSegments * state.restDuration
+    );
+  }
+
+  if (state.phase === "PREP") {
+    return (
+      Math.max(state.timeLeft, 0) +
+      rounds * state.roundDuration +
+      restSegments * state.restDuration
+    );
+  }
+
+  if (state.phase === "ROUND") {
+    const roundsLeftAfterCurrent = Math.max(rounds - state.currentRound, 0);
+    return (
+      Math.max(state.timeLeft, 0) +
+      roundsLeftAfterCurrent * state.roundDuration +
+      roundsLeftAfterCurrent * state.restDuration
+    );
+  }
+
+  if (state.phase === "REST") {
+    const roundsLeftIncludingNext = Math.max(rounds - state.currentRound, 0);
+    const restAfterNext = Math.max(roundsLeftIncludingNext - 1, 0);
+    return (
+      Math.max(state.timeLeft, 0) +
+      roundsLeftIncludingNext * state.roundDuration +
+      restAfterNext * state.restDuration
+    );
+  }
+
+  return getTotalWorkoutSeconds();
 }
 
 // Settings Logic
