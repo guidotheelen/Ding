@@ -185,13 +185,21 @@ function handlePhaseTransition() {
 // Display Logic
 function updateDisplay() {
   // Time
-  const mins = Math.floor(state.timeLeft / 60);
-  const secs = state.timeLeft % 60;
+  let displayTimeLeft = state.timeLeft;
+  if (state.phase === "READY" && state.prepDuration > 0) {
+    displayTimeLeft = state.prepDuration;
+  }
+  const mins = Math.floor(displayTimeLeft / 60);
+  const secs = displayTimeLeft % 60;
   els.minutes.textContent = mins.toString().padStart(2, "0");
   els.seconds.textContent = secs.toString().padStart(2, "0");
 
   // Round
-  els.currentRound.innerHTML = `ROUND ${state.currentRound} <span class="text-[#543b3c]">/ ${state.totalRounds}</span>`;
+  if (state.phase === "READY" && state.prepDuration > 0) {
+    els.currentRound.textContent = "GET READY";
+  } else {
+    els.currentRound.innerHTML = `ROUND ${state.currentRound} <span class="text-[#543b3c]">/ ${state.totalRounds}</span>`;
+  }
 
   // Status & Progress
   let totalDuration = state.roundDuration;
